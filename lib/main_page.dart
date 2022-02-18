@@ -1,26 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:list_with_filters/custom_checkbox_tile.dart';
+import 'package:list_with_filters/filter_dialog.dart';
 import 'package:list_with_filters/phone.dart';
-
-final brands = [
-  'Samsung',
-  'Apple',
-  'Xiaomi'
-];
-
-final colors = [
-  'red',
-  'yellow',
-  'black',
-  'blue',
-  'white'
-];
-
-final prices = [
-  'Less or equal than 100',
-  'Less or equal than 500',
-  'Less or equal than 1000'
-];
+import 'package:list_with_filters/phones_list.dart';
 
 final phoneList = [
   Phone(
@@ -69,10 +50,9 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  Map<String, List<String>?> filters = {};
   List<Phone> filteredPhones = phoneList;
 
-  void _filter() {
+  void _filter(Map<String, List<String>?> filters) {
     setState(() {
       filteredPhones = phoneList;
       filters.forEach((key, value) {
@@ -100,21 +80,8 @@ class _MainPageState extends State<MainPage> {
           }).toList();
         }
       });
-      filters.clear();
-      Navigator.of(context).pop();
     });
   }
-
-  void _handleCheckFilter(bool checked, String key, String value) {
-    final currentFilters = filters[key] ?? [];
-    if(checked) {
-      currentFilters.add(value);
-    } else {
-      currentFilters.remove(value);
-    }
-    filters[key] = currentFilters;
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -126,59 +93,13 @@ class _MainPageState extends State<MainPage> {
             icon: const Icon(Icons.filter_alt),
             onPressed: () {
               showDialog<Filter>(context: context, builder: (_) {
-                return SimpleDialog(
-                  title: const Text('Filters',textAlign: TextAlign.center,),
-                  contentPadding: const EdgeInsets.all(16),
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text('Select a brand'),
-                        ...brands.map((el) =>
-                            CustomCheckboxTile(
-                              label: el,
-                              onChange: (check) => _handleCheckFilter(check, 'brand', el),
-                            ),
-                          ).toList(),
-                        const Text('Select a price'),
-                        ...prices.map((el) =>
-                            CustomCheckboxTile(
-                              label: el,
-                              onChange: (check) => _handleCheckFilter(check, 'price', el),
-                            )
-                          ).toList(),
-                        const Text('Select a colors'),
-                        ...colors.map((el) =>
-                            CustomCheckboxTile(
-                              label: el,
-                              onChange: (check) => _handleCheckFilter(check, 'color', el),
-                            ),
-                          ).toList(),
-                        const SizedBox(height: 24,),
-                        ElevatedButton(onPressed: _filter, child: const Text('APPLY')),
-                      ],
-                    ),
-                  ],
-                );
+                return FilterDialog(onApplyFilters: _filter,);
               });
             },
           ),
         ],
       ),
-      body: filteredPhones.isEmpty
-          ? const Center(child: Text('No product', style: TextStyle(fontSize: 16),))
-          : ListView.builder(
-        itemCount: filteredPhones.length,
-        itemBuilder: (_, index) {
-          final currentPhone = filteredPhones[index];
-          return ListTile(
-            title: Text(currentPhone.name),
-            subtitle: Text('${currentPhone.brand}-${currentPhone.color}'),
-            trailing: Text('\$ ${currentPhone.price}'),
-          );
-        }
-      ),
+      body: PhonesList(phones: filteredPhones),
     );
   }
 }
