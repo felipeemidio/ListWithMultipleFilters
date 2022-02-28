@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:list_with_filters/custom_checkbox_tile.dart';
 
@@ -43,7 +41,6 @@ class _FilterDialogState extends State<FilterDialog> {
   @override
   void initState() {
     super.initState();
-    log('initialState ${widget.initialState}');
     filters = widget.initialState;
   }
 
@@ -57,7 +54,6 @@ class _FilterDialogState extends State<FilterDialog> {
     setState(() {
       filters[key] = currentFilters;
     });
-    log('$filters');
   }
 
   @override
