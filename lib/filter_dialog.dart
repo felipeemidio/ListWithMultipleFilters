@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:list_with_filters/custom_checkbox_tile.dart';
 
@@ -23,8 +25,13 @@ const prices = [
 
 class FilterDialog extends StatefulWidget {
   final void Function(Map<String, List<String>?>) onApplyFilters;
+  final Map<String, List<String>?> initialState;
 
-  const FilterDialog({Key? key, required this.onApplyFilters}) : super(key: key);
+  const FilterDialog({
+    Key? key,
+    required this.onApplyFilters,
+    this.initialState = const {},
+  }) : super(key: key);
 
   @override
   State<FilterDialog> createState() => _FilterDialogState();
@@ -33,6 +40,13 @@ class FilterDialog extends StatefulWidget {
 class _FilterDialogState extends State<FilterDialog> {
   Map<String, List<String>?> filters = {};
 
+  @override
+  void initState() {
+    super.initState();
+    log('initialState ${widget.initialState}');
+    filters = widget.initialState;
+  }
+
   void _handleCheckFilter(bool checked, String key, String value) {
     final currentFilters = filters[key] ?? [];
     if(checked) {
@@ -40,7 +54,10 @@ class _FilterDialogState extends State<FilterDialog> {
     } else {
       currentFilters.remove(value);
     }
-    filters[key] = currentFilters;
+    setState(() {
+      filters[key] = currentFilters;
+    });
+    log('$filters');
   }
 
   @override
@@ -56,6 +73,7 @@ class _FilterDialogState extends State<FilterDialog> {
             const Text('Select a brand'),
             ...brands.map((el) =>
                 CustomCheckboxTile(
+                  value: filters['brand']?.contains(el) ?? false,
                   label: el,
                   onChange: (check) => _handleCheckFilter(check, 'brand', el),
                 ),
@@ -63,6 +81,7 @@ class _FilterDialogState extends State<FilterDialog> {
             const Text('Select a price'),
             ...prices.map((el) =>
                 CustomCheckboxTile(
+                  value: filters['price']?.contains(el) ?? false,
                   label: el,
                   onChange: (check) => _handleCheckFilter(check, 'price', el),
                 )
@@ -70,6 +89,7 @@ class _FilterDialogState extends State<FilterDialog> {
             const Text('Select a colors'),
             ...colors.map((el) =>
                 CustomCheckboxTile(
+                  value: filters['color']?.contains(el) ?? false,
                   label: el,
                   onChange: (check) => _handleCheckFilter(check, 'color', el),
                 ),
@@ -78,7 +98,6 @@ class _FilterDialogState extends State<FilterDialog> {
             ElevatedButton(
               onPressed: () {
                 widget.onApplyFilters(filters);
-                filters.clear();
                 Navigator.of(context).pop();
               },
               child: const Text('APPLY'),

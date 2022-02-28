@@ -51,9 +51,11 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   List<Phone> filteredPhones = phoneList;
+  Map<String, List<String>?> currentFilters = {};
 
   void _filter(Map<String, List<String>?> filters) {
     setState(() {
+      currentFilters = filters;
       filteredPhones = phoneList;
       filters.forEach((key, value) {
         if((value ?? []).isNotEmpty) {
@@ -93,7 +95,10 @@ class _MainPageState extends State<MainPage> {
             icon: const Icon(Icons.filter_alt),
             onPressed: () {
               showDialog<Filter>(context: context, builder: (_) {
-                return FilterDialog(onApplyFilters: _filter,);
+                return FilterDialog(
+                  initialState: currentFilters,
+                  onApplyFilters: _filter,
+                );
               });
             },
           ),
