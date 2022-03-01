@@ -1,31 +1,36 @@
 import 'package:flutter/material.dart';
 
-class CustomCheckboxTile extends StatelessWidget {
+class CustomCheckboxTile extends StatefulWidget {
   final String label;
-  final bool value;
+  bool check;
   final void Function(bool)? onChange;
 
-  const CustomCheckboxTile({
-    Key? key,
-    required this.label,
-    required this.value,
-    this.onChange,
-  }) : super(key: key);
+  CustomCheckboxTile(
+      {Key? key, required this.label, this.onChange, this.check = false})
+      : super(key: key);
 
+  @override
+  State<CustomCheckboxTile> createState() => _CustomCheckboxTileState();
+}
+
+class _CustomCheckboxTileState extends State<CustomCheckboxTile> {
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Checkbox(
           visualDensity: VisualDensity.compact,
-          value: value,
+          value: widget.check,
           onChanged: (_) {
-            if(onChange != null) {
-              onChange!(!value);
-            }
+            setState(() {
+              widget.check = !widget.check;
+              if (widget.onChange != null) {
+                widget.onChange!(widget.check);
+              }
+            });
           },
         ),
-        Text(label),
+        Text(widget.label),
       ],
     );
   }
