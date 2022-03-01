@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:list_with_filters/filter_dialog.dart';
 import 'package:list_with_filters/phone.dart';
@@ -51,37 +53,68 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   List<Phone> filteredPhones = phoneList;
-  Map<String, List<String>?> currentFilters = {};
 
-  void _filter(Map<String, List<String>?> filters) {
-    setState(() {
-      currentFilters = filters;
-      filteredPhones = phoneList;
-      filters.forEach((key, value) {
-        if((value ?? []).isNotEmpty) {
-          filteredPhones = filteredPhones.where((phone) {
-            switch(key) {
-              case 'brand':
-                return value!.contains(phone.brand);
-              case 'color':
-                return value!.contains(phone.color);
-              case 'price':
-                if(value!.contains(prices[2])) {
-                  return phone.price <= 1000;
-                }
-                if(value.contains(prices[1])) {
-                  return phone.price <= 500;
-                }
-                if(value.contains(prices[0])) {
-                  return phone.price <= 100;
-                }
-                return true;
-              default:
-                return false;
-            }
-          }).toList();
+  void _filter(Map<String, List<dynamic>?> filters) {
+    print("filters $filters");
+    filteredPhones = phoneList.toList();
+
+    List tempbrand = [];
+    List tempcolor = [];
+    List<int> tempprice2 = [];
+    int tempprice = 1000;
+    filters.forEach((key, value) {
+      if (key == 'brand') {
+        for (var i = 0; i < value!.length; i++) {
+          tempbrand.add((value[i] as Map).keys.first);
         }
-      });
+      } else if (key == 'color') {
+        for (var i = 0; i < value!.length; i++) {
+          tempcolor.add((value[i] as Map).keys.first);
+        }
+      } else if (key == 'price') {
+        for (var i = 0; i < value!.length; i++) {
+          print((value[i] as Map).keys.first.toString());
+          if ((value[i] as Map)
+              .keys
+              .first
+              .toString()
+              .contains((prices[0] as Map).keys.first)) {
+            tempprice2.add(100);
+          }
+          if ((value[i] as Map)
+              .keys
+              .first
+              .toString()
+              .contains((prices[1] as Map).keys.first)) {
+            tempprice2.add(500);
+          }
+          if ((value[i] as Map)
+              .keys
+              .first
+              .toString()
+              .contains((prices[2] as Map).keys.first)) {
+            tempprice2.add(1000);
+          }
+        }
+      }
+    });
+    tempprice2.isEmpty ? tempprice == 1000 : tempprice = tempprice2.reduce(max);
+    if (tempbrand.isEmpty) {
+      for (var element in brands) {
+        tempbrand.add((element as Map).keys.first);
+      }
+    }
+    if (tempcolor.isEmpty) {
+      for (var element in colors) {
+        tempcolor.add((element as Map).keys.first);
+      }
+    }
+    setState(() {
+      filteredPhones = filteredPhones.where((phone) {
+        return tempbrand.contains(phone.brand) &&
+            tempcolor.contains(phone.color) &&
+            phone.price <= tempprice;
+      }).toList();
     });
   }
 
@@ -93,13 +126,14 @@ class _MainPageState extends State<MainPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt),
-            onPressed: () {
-              showDialog<Filter>(context: context, builder: (_) {
-                return FilterDialog(
-                  initialState: currentFilters,
-                  onApplyFilters: _filter,
-                );
-              });
+            onPressed: () async {
+              showDialog<Filter>(
+                  context: context,
+                  builder: (_) {
+                    return FilterDialog(
+                      onApplyFilters: _filter,
+                    );
+                  });
             },
           ),
         ],
